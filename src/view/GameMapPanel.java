@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -14,7 +15,8 @@ import model.Country;
 import model.GameData;
 import model.Transport;
 
-public class GameMapPanel extends  JPanel {
+public class GameMapPanel extends JPanel {
+
     private GameData gameData;
     private Map<Country, Point> countryPositions;
 
@@ -24,60 +26,70 @@ public class GameMapPanel extends  JPanel {
     private Image boatIcon;
     private Image busIcon;
 
-    public GameMapPanel(GameData data){
+    public GameMapPanel(GameData data) {
         this.gameData = data;
         countryPositions = new HashMap<>();
         transportProgress = new HashMap<>();
 
-        planeIcon = new ImageIcon("C:\\Users\\nazar\\OneDrive\\Documents\\PJAIT\\first_year\\GUI\\PROJECT\\Plague_Inc\\resources\\images\\planeIcon.png").getImage();
-        boatIcon = new ImageIcon("C:\\Users\\nazar\\OneDrive\\Documents\\PJAIT\\first_year\\GUI\\PROJECT\\Plague_Inc\\resources\\images\\boatIcon.png").getImage();
-        busIcon = new ImageIcon("C:\\Users\\nazar\\OneDrive\\Documents\\PJAIT\\first_year\\GUI\\PROJECT\\Plague_Inc\\resources\\images\\busIcon.png").getImage();
+        try {
+            // Get the path relative to where we are
+            File currentDir = new File(System.getProperty("user.dir"));
+            File projectRoot = currentDir.getParentFile(); // Go up one level from src
 
-        
+            // Build the paths using the project root
+            planeIcon = new ImageIcon(projectRoot + "/resources/images/planeIcon.png").getImage();
+            boatIcon = new ImageIcon(projectRoot + "/resources/images/boatIcon.png").getImage();
+            busIcon = new ImageIcon(projectRoot + "/resources/images/busIcon.png").getImage();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void assignCountryPossitions(){
+    public void assignCountryPossitions() {
         int size = gameData.getCountries().size();
         int radius = 200;
-        int centerX = getWidth()/2;
-        int centerY = getHeight()/2;
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
 
-
-        for (int i = 0; i < size; i++){
+        for (int i = 0; i < size; i++) {
             double angle = 2 * Math.PI * i / size;
-            int x  = (int) (centerX + radius * Math.cos(angle));
+            int x = (int) (centerX + radius * Math.cos(angle));
             int y = (int) (centerY + radius * Math.sin(angle));
             countryPositions.put(gameData.getCountries().get(i), new Point(x, y));
         }
 
-        for (Country c : gameData.getCountries()){
-            for (Transport t : c.getTransportLinks()){
+        for (Country c : gameData.getCountries()) {
+            for (Transport t : c.getTransportLinks()) {
                 transportProgress.put(t, Math.random());
             }
         }
     }
 
     @Override
-    public void paintComponent(Graphics g){
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        if (gameData.getCountries().isEmpty()) return;
-        if(countryPositions.isEmpty()) assignCountryPossitions();
+        if (gameData.getCountries().isEmpty()) {
+            return;
+        }
+        if (countryPositions.isEmpty()) {
+            assignCountryPossitions();
+        }
 
         Graphics2D g2 = (Graphics2D) g;
 
-        for(Country c : gameData.getCountries()){
+        for (Country c : gameData.getCountries()) {
             Point srcPos = countryPositions.get(c);
-            for (Transport t : c.getTransportLinks()){
+            for (Transport t : c.getTransportLinks()) {
                 Point dstPos = countryPositions.get(t.getDestination());
-                g2. setColor(t.isRouteOpen() ? Color.LIGHT_GRAY : Color.RED);
+                g2.setColor(t.isRouteOpen() ? Color.LIGHT_GRAY : Color.RED);
                 g2.setStroke(new BasicStroke(2));
                 g2.drawLine(srcPos.x, srcPos.y, dstPos.x, dstPos.y);
 
-
                 double progress = transportProgress.getOrDefault(t, 0.0);
                 progress += 0.01;
-                if(progress > 1.0){
+                if (progress > 1.0) {
                     progress = 0.0;
                 }
                 transportProgress.put(t, progress);
@@ -93,33 +105,27 @@ public class GameMapPanel extends  JPanel {
                 }
                 if (t.isRouteOpen()) {
                     g2.drawImage(icon, iconX - 8, iconY - 8, 16, 16, null);
-                } 
+                }
             }
         }
 
-
-        for (Country c : gameData.getCountries()){
+        for (Country c : gameData.getCountries()) {
             Point pos = countryPositions.get(c);
             int radius = 30;
             g2.setColor(Color.GREEN);
 
-
-            if(c.getInfected() > 0){
-                double infectedRatio = (double)c.getInfected()/c.getPopulation();
-                int redValue = (int)(255 * infectedRatio);
-                int greenValue = (int)(255 * (1 - infectedRatio));
+            if (c.getInfected() > 0) {
+                double infectedRatio = (double) c.getInfected() / c.getPopulation();
+                int redValue = (int) (255 * infectedRatio);
+                int greenValue = (int) (255 * (1 - infectedRatio));
                 g2.setColor(new Color(redValue, greenValue, 0));
             }
-            g2.fillOval(pos.x - radius/2, pos.y - radius/2, radius, radius);
+            g2.fillOval(pos.x - radius / 2, pos.y - radius / 2, radius, radius);
 
             g2.setColor(Color.BLACK);
             String info = String.format("%s\n%d/%d", c.getName(), c.getInfected(), c.getPopulation());
-            g2.drawString(info, pos.x - 20, pos.y - radius/2 - 5);
+            g2.drawString(info, pos.x - 20, pos.y - radius / 2 - 5);
         }
     }
 
-    
-
-
-    
 }
