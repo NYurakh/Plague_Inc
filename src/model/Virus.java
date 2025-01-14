@@ -35,10 +35,12 @@ public class Virus implements Serializable {
     }
 
     public void spreadLocally(Country country) {
+
         if (spreadRate == 0) {
             if (country.isCureAvailable()) {
                 int cured = (int) Math.ceil(country.getInfected() * (cureRate / 100.0));
                 country.cure(cured);
+                country.setCureSymbolVisible(true);
             }
             return;
         }
@@ -48,6 +50,7 @@ public class Virus implements Serializable {
             int cured = (int) Math.ceil(country.getInfected() * (cureRate / 100.0));
             country.infect(newInfections);
             country.cure(cured);
+            country.setCureSymbolVisible(true);
         } else {
             // Normal spread without cure
             int newInfections = (int) Math.ceil(country.getInfected() * (spreadRate / 100.0));

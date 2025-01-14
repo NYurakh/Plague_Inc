@@ -67,65 +67,72 @@ public class GameMapPanel extends JPanel {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+public void paintComponent(Graphics g) {
+    super.paintComponent(g);
 
-        if (gameData.getCountries().isEmpty()) {
-            return;
-        }
-        if (countryPositions.isEmpty()) {
-            assignCountryPossitions();
-        }
+    if (gameData.getCountries().isEmpty()) return;
+    if (countryPositions.isEmpty()) assignCountryPossitions();
 
-        Graphics2D g2 = (Graphics2D) g;
+    Graphics2D g2 = (Graphics2D) g;
 
-        for (Country c : gameData.getCountries()) {
-            Point srcPos = countryPositions.get(c);
-            for (Transport t : c.getTransportLinks()) {
-                Point dstPos = countryPositions.get(t.getDestination());
-                g2.setColor(t.isRouteOpen() ? Color.LIGHT_GRAY : Color.RED);
-                g2.setStroke(new BasicStroke(2));
-                g2.drawLine(srcPos.x, srcPos.y, dstPos.x, dstPos.y);
+    // Draw transport links
+    for (Country c : gameData.getCountries()) {
+        Point srcPos = countryPositions.get(c);
+        for (Transport t : c.getTransportLinks()) {
+            Point dstPos = countryPositions.get(t.getDestination());
+            g2.setColor(t.isRouteOpen() ? Color.LIGHT_GRAY : Color.RED);
+            g2.setStroke(new BasicStroke(2));
+            g2.drawLine(srcPos.x, srcPos.y, dstPos.x, dstPos.y);
 
-                double progress = transportProgress.getOrDefault(t, 0.0);
-                progress += 0.01;
-                if (progress > 1.0) {
-                    progress = 0.0;
-                }
-                transportProgress.put(t, progress);
-
-                int iconX = (int) (srcPos.x + (dstPos.x - srcPos.x) * progress);
-                int iconY = (int) (srcPos.y + (dstPos.y - srcPos.y) * progress);
-
-                Image icon = planeIcon;
-                if (t.getType().equalsIgnoreCase("Bus")) {
-                    icon = busIcon;
-                } else if (t.getType().equalsIgnoreCase("Boat")) {
-                    icon = boatIcon;
-                }
-                if (t.isRouteOpen()) {
-                    g2.drawImage(icon, iconX - 8, iconY - 8, 16, 16, null);
-                }
+            double progress = transportProgress.getOrDefault(t, 0.0);
+            progress += 0.01;
+            if (progress > 1.0) {
+                progress = 0.0;
             }
-        }
+            transportProgress.put(t, progress);
 
-        for (Country c : gameData.getCountries()) {
-            Point pos = countryPositions.get(c);
-            int radius = 30;
-            g2.setColor(Color.GREEN);
+            int iconX = (int) (srcPos.x + (dstPos.x - srcPos.x) * progress);
+            int iconY = (int) (srcPos.y + (dstPos.y - srcPos.y) * progress);
 
-            if (c.getInfected() > 0) {
-                double infectedRatio = (double) c.getInfected() / c.getPopulation();
-                int redValue = (int) (255 * infectedRatio);
-                int greenValue = (int) (255 * (1 - infectedRatio));
-                g2.setColor(new Color(redValue, greenValue, 0));
+            Image icon = planeIcon;
+            if (t.getType().equalsIgnoreCase("Bus")) {
+                icon = busIcon;
+            } else if (t.getType().equalsIgnoreCase("Boat")) {
+                icon = boatIcon;
             }
-            g2.fillOval(pos.x - radius / 2, pos.y - radius / 2, radius, radius);
-
-            g2.setColor(Color.BLACK);
-            String info = String.format("%s\n%d/%d", c.getName(), c.getInfected(), c.getPopulation());
-            g2.drawString(info, pos.x - 20, pos.y - radius / 2 - 5);
+            if (t.isRouteOpen()) {
+                g2.drawImage(icon, iconX - 8, iconY - 8, 16, 16, null);
+            }
         }
     }
+
+    // Draw countries
+    for (Country c : gameData.getCountries()) {
+        Point pos = countryPositions.get(c);
+        int radius = 30;
+
+        // Set color based on infection rate
+        g2.setColor(Color.GREEN);
+        if (c.getInfected() > 0) {
+            double infectedRatio = (double) c.getInfected() / c.getPopulation();
+            int redValue = (int) (255 * infectedRatio);
+            int greenValue = (int) (255 * (1 - infectedRatio));
+            g2.setColor(new Color(redValue, greenValue, 0));
+        }
+        g2.fillOval(pos.x - radius / 2, pos.y - radius / 2, radius, radius);
+
+        // Draw the cure symbol if cure is currently active
+        if (c.isCureSymbolVisible()) {
+            g2.setColor(Color.BLUE);
+            g2.drawString("⚕", pos.x - radius / 2, pos.y + radius / 2);
+        }
+
+        // Draw country info
+        g2.setColor(Color.BLACK);
+        String info = String.format("%s\n%d/%d", c.getName(), c.getInfected(), c.getPopulation());
+        g2.drawString(info, pos.x - 20, pos.y - radius / 2 - 5);
+    }
+}
+
 
 }

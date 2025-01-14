@@ -80,12 +80,13 @@ public class GameController {
             virus.spreadToNeighbors(c);
         }
         // Award points for each non-infected person
-        int nonInfected = 0;
-        for (Country c : gameData.getCountries()) {
-            nonInfected += (c.getPopulation() - c.getInfected());
-        }
-        // Simple formula: you get 1 point per 100 saved
-        gameData.addPoints(nonInfected / 100);
+        // Award points based on saved population percentage
+        int totalPopulation = gameData.getCountries().stream().mapToInt(Country::getPopulation).sum();
+        int nonInfected = gameData.getCountries().stream().mapToInt(c -> c.getPopulation() - c.getInfected()).sum();
+        int savedPercentage = (nonInfected * 100) / totalPopulation;
+
+        // Reward fewer points as savedPercentage increases
+        gameData.addPoints(Math.max(1, savedPercentage / 10));
 
         // Check end conditions
         checkEndConditions();
@@ -153,7 +154,7 @@ public class GameController {
         gameView.getUpgradeButton().addActionListener(e -> {
             // Create a new UpgradesView dialog
             UpgradesView upgradesView = new UpgradesView(gameView, gameData.getAllUpgrades());
-    
+
             // Add action listener for the buy button inside the upgrades dialog
             upgradesView.getBuyButton().addActionListener(new ActionListener() {
                 @Override
@@ -166,7 +167,7 @@ public class GameController {
                             selectedUpgrade.applyEffect(gameData); // Apply effect
                             upgradesView.updatePointsDisplay(gameData.getPoints());
                             upgradesView.showSuccessMessage("Upgrade purchased: " + selectedUpgrade.getName());
-    
+
                             // Remove non-reusable upgrades
                             if (!selectedUpgrade.isReusable()) {
                                 upgradesView.removeUpgrade(selectedIndex);
@@ -180,11 +181,10 @@ public class GameController {
                     }
                 }
             });
-    
+
             // Show the dialog
             upgradesView.setVisible(true);
         });
     }
-    
-    
+
 }

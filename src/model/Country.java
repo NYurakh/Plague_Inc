@@ -10,15 +10,25 @@ public class Country implements Serializable{
     private int population;
     private int infected;
     private boolean isCureAvailable;
+    private boolean isCureSymbolVisible;
     private List<Transport> transportLinks;
+    
 
     public Country(String name, int popolation) {
         this.name = name;
         this.population = popolation;
         this.infected = 0;
         this.isCureAvailable = false;
+        this.isCureSymbolVisible = false;
         this.transportLinks = new ArrayList<>();
 
+    }
+    public boolean isCureSymbolVisible() {
+        return isCureSymbolVisible;
+    }
+
+    public void setCureSymbolVisible(boolean visible) {
+        this.isCureSymbolVisible = visible;
     }
 
     public String getName() {
