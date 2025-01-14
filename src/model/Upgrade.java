@@ -67,7 +67,7 @@ public class Upgrade implements Serializable {
                 }
                 break;
 
-            case "Anti_Viral Drugs":
+            case "Anti-Viral Drug":
                 for (Country ctry : gameData.getCountries()) {
                     ctry.setCureAvailable(true);
                 }
