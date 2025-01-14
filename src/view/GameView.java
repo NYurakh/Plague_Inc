@@ -36,15 +36,19 @@ public class GameView extends JFrame {
 
         // Add action listener to trigger UpgradesView as a dialog
         upgradeButton.addActionListener(e -> {
-            if (upgradesView == null || !upgradesView.isVisible()) {
+            if (upgradesView == null) {
                 upgradesView = new UpgradesView(this, gameData.getAllUpgrades());
                 upgradesView.setVisible(true);
-
-                // Dispose the dialog when closed to free resources
+    
                 upgradesView.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        upgradesView = null;
+                    }
+    
+                    @Override
                     public void windowClosed(java.awt.event.WindowEvent e) {
-                        upgradesView = null; // Reset the reference when closed
+                        upgradesView = null;
                     }
                 });
             }

@@ -7,12 +7,18 @@ public class HighScoreRecord implements Serializable{
     private int finalScore;
     private String difficulty;
     private long timePlayedMillis;
+    private char resultType; //S or I
 
-    public HighScoreRecord(String playerName, int finalScore, String difficulty, long timePlayedMillis) {
+    public HighScoreRecord(String playerName, int finalScore, String difficulty, long timePlayedMillis, char resultType) {
         this.playerName = playerName;
         this.finalScore = finalScore;
         this.difficulty = difficulty;
         this.timePlayedMillis = timePlayedMillis;
+        this.resultType = resultType;
+    }
+
+    public char getResultType(){
+        return resultType;
     }
 
     public String getPlayerName(){
@@ -33,7 +39,7 @@ public class HighScoreRecord implements Serializable{
 
     @Override
     public String toString() {
-        return String.format("%s - Score: %d - Difficulty: %s - Time: %.2f sec",
-                playerName, finalScore, difficulty, timePlayedMillis / 1000.0);
+        return String.format("%s - Score: %d - Difficulty: %s - Time: %.2f sec - Result: %c",
+                playerName, finalScore, difficulty, timePlayedMillis / 1000.0, resultType);
     }
 }

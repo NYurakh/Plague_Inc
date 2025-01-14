@@ -108,6 +108,7 @@ public class GameController {
             // Game ends
             gameData.setGameRunning(false);
             String message = allInfected ? "All countries infected!" : "All countries saved!";
+            char resultType = allInfected ? 'I' : 'S';
             JOptionPane.showMessageDialog(gameView, message, "Game Over", JOptionPane.INFORMATION_MESSAGE);
 
             // Prompt for name
@@ -115,7 +116,7 @@ public class GameController {
             if (name != null && !name.trim().isEmpty()) {
                 long timePlayed = System.currentTimeMillis() - gameData.getStartTimeMillis();
                 int finalScore = gameData.getPoints();
-                HighScoreRecord rec = new HighScoreRecord(name, finalScore, difficulty, timePlayed);
+                HighScoreRecord rec = new HighScoreRecord(name, finalScore, difficulty, timePlayed, resultType);
                 gameData.addHighScore(rec);
                 GameData.saveHighScores("highscores.dat", gameData);
             }

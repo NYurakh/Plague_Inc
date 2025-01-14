@@ -103,6 +103,15 @@ public class GameData implements Serializable {
 
     public void addHighScore(HighScoreRecord record) {
         highScores.add(record);
+        highScores.sort((a, b) ->{
+            if(a.getResultType() != b.getResultType()){
+                return a.getResultType() == 'S' ? -1: 1;
+            }
+
+            int scoreComparison = Integer.compare(b.getFinalScore(), a.getFinalScore());
+            if(scoreComparison != 0) return scoreComparison;
+            return Long.compare(a.getTimePlayedMillis(), b.getTimePlayedMillis());
+        });
 
     }
 

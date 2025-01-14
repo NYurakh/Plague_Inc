@@ -11,7 +11,15 @@ public class Virus implements Serializable {
     public Virus(int spreadRate, int initialInfectionRate) {
         this.spreadRate = spreadRate;
         this.initialInfectionRate = initialInfectionRate;
-        this.cureRate = 10;
+        this.cureRate = 0;
+    }
+
+    public void setCureRate(int rate){
+        this.cureRate = rate;
+    }
+
+    public int getCureRate(){
+        return cureRate;
     }
 
     public int getSpreadRate() {
