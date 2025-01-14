@@ -1,17 +1,23 @@
 package model;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 
 public class Upgrade implements Serializable {
 
     private String name;
     private int cost;
     private String effectDescription;
+    private Predicate<GameData> availabilityCondition;
 
-    public Upgrade(String name, int cost, String effectDescription) {
+    public Upgrade(String name, int cost, String effectDescription, Predicate<GameData> condition) {
         this.name = name;
         this.cost = cost;
         this.effectDescription = effectDescription;
+        this.availabilityCondition = condition;
+    }
+    public boolean isAvailable(GameData gameData) {
+        return availabilityCondition == null || availabilityCondition.test(gameData);
     }
 
     public String getName() {

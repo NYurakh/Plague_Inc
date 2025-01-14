@@ -37,7 +37,7 @@ public class GameView extends JFrame {
         // Add action listener to trigger UpgradesView as a dialog
         upgradeButton.addActionListener(e -> {
             if (upgradesView == null) {
-                upgradesView = new UpgradesView(this, gameData.getAllUpgrades());
+                upgradesView = new UpgradesView(this, gameData.getAvailableUpgrades());
                 upgradesView.setVisible(true);
     
                 upgradesView.addWindowListener(new java.awt.event.WindowAdapter() {

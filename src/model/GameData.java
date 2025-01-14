@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GameData implements Serializable {
 
@@ -33,15 +34,52 @@ public class GameData implements Serializable {
     private void initUpgrades() {
         allUpgrades = new ArrayList<>();
 
-        allUpgrades.add(new Upgrade("Mask Mandate", 10, "Decrease spread rate by 5"));
-        allUpgrades.add(new Upgrade("Social Distancing", 20, "Decrease spread rate by 10"));
-        allUpgrades.add(new Upgrade("Border Closure", 30, "Close all transport routes"));
-        allUpgrades.add(new Upgrade("Partial Lockdown", 40, "Decrease spread rate by 15"));
-        allUpgrades.add(new Upgrade("Free Testing", 50, "Cure 20% of infected globally"));
-        allUpgrades.add(new Upgrade("Airport Screening", 15, "Close all air transport routes"));
-        allUpgrades.add(new Upgrade("Anti-Viral Drug", 100, "Cure is available in all countries"));
-        allUpgrades.add(new Upgrade("Medical Aid", 25, "Cure 50% of infected globally"));
-        allUpgrades.add(new Upgrade("Full Lockdown", 200, "Spread rate becomes 0"));
+        allUpgrades.add(new Upgrade("Mask Mandate", 50, "Decrease spread rate by 5", null));
+        allUpgrades.add(new Upgrade("Social Distancing", 100, "Decrease spread rate by 10", gameData -> gameData.getCountries().stream()
+                .mapToInt(Country::getInfected)
+                .sum() >= 0.1 * gameData.getCountries().stream()
+                        .mapToInt(Country::getPopulation)
+                        .sum()
+        ));
+        allUpgrades.add(new Upgrade("Border Closure", 200, "Close all transport routes", gameData -> gameData.getCountries().stream()
+                .mapToInt(Country::getInfected)
+                .sum() >= 0.2 * gameData.getCountries().stream()
+                        .mapToInt(Country::getPopulation)
+                        .sum()
+        ));
+        allUpgrades.add(new Upgrade("Partial Lockdown", 250, "Decrease spread rate by 15", gameData -> gameData.getCountries().stream()
+                .anyMatch(c -> c.getInfected() >= 0.5 * c.getPopulation())
+        ));
+        allUpgrades.add(new Upgrade("Free Testing", 75, "Cure 20% of infected globally", gameData -> gameData.getCountries().stream()
+                .filter(c -> c.getInfected() > 0)
+                .count() >= 5
+        ));
+        allUpgrades.add(new Upgrade("Airport Screening", 90, "Close all air transport routes", gameData -> gameData.getCountries().stream()
+                .flatMap(c -> c.getTransportLinks().stream())
+                .filter(t -> t.getType().equalsIgnoreCase("Air"))
+                .anyMatch(t -> t.getSource().getInfected() > 0)
+        ));
+        allUpgrades.add(new Upgrade("Anti-Viral Drug", 200, "Cure is available in all countries", gameData -> gameData.getPoints() >= 100
+                && gameData.getCountries().stream()
+                        .mapToInt(Country::getInfected)
+                        .sum() >= 0.4 * gameData.getCountries().stream()
+                        .mapToInt(Country::getPopulation)
+                        .sum()
+        ));
+        allUpgrades.add(new Upgrade("Medical Aid", 150, "Cure 50% of infected globally", gameData -> gameData.getCountries().stream()
+                .mapToInt(Country::getInfected)
+                .sum() > 1000
+        ));
+        allUpgrades.add(new Upgrade("Full Lockdown", 500, "Spread rate becomes 0", gameData -> {
+            double infected = gameData.getCountries().stream()
+                    .mapToInt(Country::getInfected)
+                    .sum();
+            double population = gameData.getCountries().stream()
+                    .mapToInt(Country::getPopulation)
+                    .sum();
+            return infected / population > 0.7;
+        }
+        ));
     }
 
     public List<Country> getCountries() {
@@ -86,13 +124,18 @@ public class GameData implements Serializable {
     public List<Upgrade> getAllUpgrades() {
         return allUpgrades;
     }
+    public List<Upgrade> getAvailableUpgrades() {
+    return allUpgrades.stream()
+            .filter(upgrade -> upgrade.isAvailable(this)) // Filters based on predicate
+            .collect(Collectors.toList());
+}
 
-    public boolean purchaseUpgrade(Upgrade upgrade){
-        if(points >= upgrade.getCost()){
+    public boolean purchaseUpgrade(Upgrade upgrade) {
+        if (points >= upgrade.getCost()) {
             points -= upgrade.getCost();
             upgrade.applyEffect(this);
             return true;
-        }else {
+        } else {
             return false;
         }
     }
@@ -103,13 +146,15 @@ public class GameData implements Serializable {
 
     public void addHighScore(HighScoreRecord record) {
         highScores.add(record);
-        highScores.sort((a, b) ->{
-            if(a.getResultType() != b.getResultType()){
-                return a.getResultType() == 'S' ? -1: 1;
+        highScores.sort((a, b) -> {
+            if (a.getResultType() != b.getResultType()) {
+                return a.getResultType() == 'S' ? -1 : 1;
             }
 
             int scoreComparison = Integer.compare(b.getFinalScore(), a.getFinalScore());
-            if(scoreComparison != 0) return scoreComparison;
+            if (scoreComparison != 0) {
+                return scoreComparison;
+            }
             return Long.compare(a.getTimePlayedMillis(), b.getTimePlayedMillis());
         });
 

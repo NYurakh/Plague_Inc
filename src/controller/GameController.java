@@ -153,7 +153,7 @@ public class GameController {
         // Add action listener to the upgrade button in GameView
         gameView.getUpgradeButton().addActionListener(e -> {
             // Create a new UpgradesView dialog
-            UpgradesView upgradesView = new UpgradesView(gameView, gameData.getAllUpgrades());
+            UpgradesView upgradesView = new UpgradesView(gameView, gameData.getAvailableUpgrades());
 
             // Add action listener for the buy button inside the upgrades dialog
             upgradesView.getBuyButton().addActionListener(new ActionListener() {
@@ -161,7 +161,7 @@ public class GameController {
                 public void actionPerformed(ActionEvent e) {
                     int selectedIndex = upgradesView.getSelectedUpgradeIndex();
                     if (selectedIndex >= 0) {
-                        Upgrade selectedUpgrade = gameData.getAllUpgrades().get(selectedIndex);
+                        Upgrade selectedUpgrade = gameData.getAvailableUpgrades().get(selectedIndex);
                         if (gameData.getPoints() >= selectedUpgrade.getCost()) {
                             gameData.addPoints(-selectedUpgrade.getCost()); // Deduct points
                             selectedUpgrade.applyEffect(gameData); // Apply effect
@@ -171,7 +171,7 @@ public class GameController {
                             // Remove non-reusable upgrades
                             if (!selectedUpgrade.isReusable()) {
                                 upgradesView.removeUpgrade(selectedIndex);
-                                gameData.getAllUpgrades().remove(selectedIndex);
+                                gameData.getAvailableUpgrades().remove(selectedIndex);
                             }
                         } else {
                             upgradesView.showErrorMessage("Not enough points for: " + selectedUpgrade.getName());
