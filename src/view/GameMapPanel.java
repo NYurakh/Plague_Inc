@@ -5,7 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,23 +18,30 @@ import model.Transport;
 public class GameMapPanel extends JPanel {
 
     private GameData gameData;
-    private Map<Country, Point> countryPositions;
+    private Map<Country, Point2D.Double> normalizedPositions = new HashMap<>();
 
     private Map<Transport, Double> transportProgress;
 
     private Image planeIcon;
     private Image boatIcon;
     private Image busIcon;
+    private Image backgroundImage;
 
     public GameMapPanel(GameData data) {
         this.gameData = data;
-        countryPositions = new HashMap<>();
+        File currentDir = new File(System.getProperty("user.dir"));
+        File projectRoot = currentDir.getParentFile();
+        try {
+            backgroundImage = new ImageIcon(projectRoot + "/resources/images/worldMap.png").getImage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         transportProgress = new HashMap<>();
 
         try {
             // Get the path relative to where we are
-            File currentDir = new File(System.getProperty("user.dir"));
-            File projectRoot = currentDir.getParentFile(); // Go up one level from src
+            // Go up one level from src
 
             // Build the paths using the project root
             planeIcon = new ImageIcon(projectRoot + "/resources/images/planeIcon.png").getImage();
@@ -44,95 +51,171 @@ public class GameMapPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        initNormalizedPositions();
     }
 
-    public void assignCountryPossitions() {
-        int size = gameData.getCountries().size();
-        int radius = 200;
-        int centerX = getWidth() / 2;
-        int centerY = getHeight() / 2;
-
-        for (int i = 0; i < size; i++) {
-            double angle = 2 * Math.PI * i / size;
-            int x = (int) (centerX + radius * Math.cos(angle));
-            int y = (int) (centerY + radius * Math.sin(angle));
-            countryPositions.put(gameData.getCountries().get(i), new Point(x, y));
-        }
-
+    private void initNormalizedPositions() {
+        // For each country, store normalized (x, y) = (pixelX / 2036, pixelY / 1492)
         for (Country c : gameData.getCountries()) {
-            for (Transport t : c.getTransportLinks()) {
-                transportProgress.put(t, Math.random());
+            switch (c.getName()) {
+                case "USA":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(470.0 / 2036.0, 747.0 / 1492.0));
+                    break;
+                case "Canada":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(246.0 / 2036.0, 521.0 / 1492.0));
+                    break;
+                case "Mexico":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(371.0 / 2036.0, 795.0 / 1492.0));
+                    break;
+                case "Brazil":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(673.0 / 2036.0, 982.0 / 1492.0));
+                    break;
+                case "UK":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(1040.0 / 2036.0, 490.0 / 1492.0));
+                    break;
+                case "France":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(1030.0 / 2036.0, 640.0 / 1492.0));
+                    break;
+                case "Germany":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(1130.0 / 2036.0, 610.0 / 1492.0));
+                    break;
+                case "Moskovia":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(1680.0 / 2036.0, 590.0 / 1492.0));
+                    break;
+                case "China":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(1840.0 / 2036.0, 680.0 / 1492.0));
+                    break;
+                case "Australia":
+                    normalizedPositions.put(c,
+                            new Point2D.Double(1870.0 / 2036.0, 1080.0 / 1492.0));
+                    break;
+                default:
+                    // You can place any additional countries or default to (0,0)
+                    normalizedPositions.put(c, new Point2D.Double(0.5, 0.5));
             }
         }
     }
 
+    // public void assignCountryPossitions() {
+    //     int size = gameData.getCountries().size();
+    //     int radius = 200;
+    //     int centerX = getWidth() / 2;
+    //     int centerY = getHeight() / 2;
+    //     for (int i = 0; i < size; i++) {
+    //         double angle = 2 * Math.PI * i / size;
+    //         int x = (int) (centerX + radius * Math.cos(angle));
+    //         int y = (int) (centerY + radius * Math.sin(angle));
+    //         countryPositions.put(gameData.getCountries().get(i), new Point(x, y));
+    //     }
+    //     for (Country c : gameData.getCountries()) {
+    //         for (Transport t : c.getTransportLinks()) {
+    //             transportProgress.put(t, Math.random());
+    //         }
+    //     }
+    // }
     @Override
-public void paintComponent(Graphics g) {
-    super.paintComponent(g);
+    protected void paintComponent(Graphics g
+    ) {
+        super.paintComponent(g);
 
-    if (gameData.getCountries().isEmpty()) return;
-    if (countryPositions.isEmpty()) assignCountryPossitions();
+        // Draw the background image, scaled to fit the panel:
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
 
-    Graphics2D g2 = (Graphics2D) g;
+        if (gameData.getCountries().isEmpty()) {
+            return;
+        }
 
-    // Draw transport links
-    for (Country c : gameData.getCountries()) {
-        Point srcPos = countryPositions.get(c);
-        for (Transport t : c.getTransportLinks()) {
-            Point dstPos = countryPositions.get(t.getDestination());
-            g2.setColor(t.isRouteOpen() ? Color.LIGHT_GRAY : Color.RED);
-            g2.setStroke(new BasicStroke(2));
-            g2.drawLine(srcPos.x, srcPos.y, dstPos.x, dstPos.y);
+        Graphics2D g2 = (Graphics2D) g;
 
-            double progress = transportProgress.getOrDefault(t, 0.0);
-            progress += 0.01;
-            if (progress > 1.0) {
-                progress = 0.0;
+        // --- Draw transport lines/vehicles ---
+        for (Country c : gameData.getCountries()) {
+            Point2D.Double srcNorm = normalizedPositions.get(c);
+            if (srcNorm == null) {
+                continue;
             }
-            transportProgress.put(t, progress);
 
-            int iconX = (int) (srcPos.x + (dstPos.x - srcPos.x) * progress);
-            int iconY = (int) (srcPos.y + (dstPos.y - srcPos.y) * progress);
+            // Convert normalized -> actual pixels
+            int srcX = (int) (srcNorm.x * getWidth());
+            int srcY = (int) (srcNorm.y * getHeight());
 
-            Image icon = planeIcon;
-            if (t.getType().equalsIgnoreCase("Bus")) {
-                icon = busIcon;
-            } else if (t.getType().equalsIgnoreCase("Boat")) {
-                icon = boatIcon;
-            }
-            if (t.isRouteOpen()) {
-                g2.drawImage(icon, iconX - 8, iconY - 8, 16, 16, null);
+            for (Transport t : c.getTransportLinks()) {
+                Country dest = t.getDestination();
+                Point2D.Double dstNorm = normalizedPositions.get(dest);
+                if (dstNorm == null) {
+                    continue;
+                }
+
+                int dstX = (int) (dstNorm.x * getWidth());
+                int dstY = (int) (dstNorm.y * getHeight());
+
+                // draw line
+                g2.setColor(t.isRouteOpen() ? Color.LIGHT_GRAY : Color.RED);
+                g2.setStroke(new BasicStroke(2));
+                g2.drawLine(srcX, srcY, dstX, dstY);
+
+                // animate transport icon
+                double progress = transportProgress.getOrDefault(t, 0.0);
+                progress += 0.01;
+                if (progress > 1.0) {
+                    progress = 0.0;
+                }
+                transportProgress.put(t, progress);
+
+                int iconX = (int) (srcX + (dstX - srcX) * progress);
+                int iconY = (int) (srcY + (dstY - srcY) * progress);
+
+                Image icon = planeIcon;
+                if (t.getType().equalsIgnoreCase("Bus")) {
+                    icon = busIcon;
+                } else if (t.getType().equalsIgnoreCase("Boat")) {
+                    icon = boatIcon;
+                }
+                if (t.isRouteOpen()) {
+                    g2.drawImage(icon, iconX - 8, iconY - 8, 16, 16, null);
+                }
             }
         }
-    }
 
-    // Draw countries
-    for (Country c : gameData.getCountries()) {
-        Point pos = countryPositions.get(c);
-        int radius = 30;
+        // --- Draw country circles & labels ---
+        for (Country c : gameData.getCountries()) {
+            Point2D.Double norm = normalizedPositions.get(c);
+            if (norm == null) {
+                continue;
+            }
 
-        // Set color based on infection rate
-        g2.setColor(Color.GREEN);
-        if (c.getInfected() > 0) {
+            int x = (int) (norm.x * getWidth());
+            int y = (int) (norm.y * getHeight());
+            int radius = 30;
+
+            // infection color
             double infectedRatio = (double) c.getInfected() / c.getPopulation();
             int redValue = (int) (255 * infectedRatio);
             int greenValue = (int) (255 * (1 - infectedRatio));
             g2.setColor(new Color(redValue, greenValue, 0));
-        }
-        g2.fillOval(pos.x - radius / 2, pos.y - radius / 2, radius, radius);
+            g2.fillOval(x - radius / 2, y - radius / 2, radius, radius);
 
-        // Draw the cure symbol if cure is currently active
-        if (c.isCureSymbolVisible()) {
-            g2.setColor(Color.BLUE);
-            g2.drawString("⚕", pos.x - radius / 2, pos.y + radius / 2);
-        }
+            // cure symbol if needed
+            if (c.isCureSymbolVisible()) {
+                g2.setColor(Color.BLUE);
+                g2.drawString("⚕", x - radius / 2, y + radius / 2);
+            }
 
-        // Draw country info
-        g2.setColor(Color.BLACK);
-        String info = String.format("%s\n%d/%d", c.getName(), c.getInfected(), c.getPopulation());
-        g2.drawString(info, pos.x - 20, pos.y - radius / 2 - 5);
+            // country info
+            g2.setColor(Color.BLACK);
+            String info = String.format("%s\n%d/%d", c.getName(), c.getInfected(), c.getPopulation());
+            g2.drawString(info, x - 20, y - radius / 2 - 5);
+        }
     }
-}
-
-
 }
