@@ -10,7 +10,6 @@ public class GameView extends JFrame {
     private JLabel scoreLabel;
     private JButton upgradeButton;
     private GameMapPanel mapPanel;
-    private UpgradesView upgradesView;
 
     public GameView(GameData gameData) {
         setTitle(

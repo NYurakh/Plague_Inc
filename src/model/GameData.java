@@ -34,52 +34,67 @@ public class GameData implements Serializable {
     private void initUpgrades() {
         allUpgrades = new ArrayList<>();
 
-        allUpgrades.add(new Upgrade("Mask Mandate", 50, "Decrease spread rate by 5", null));
-        allUpgrades.add(new Upgrade("Social Distancing", 100, "Decrease spread rate by 10", gameData -> gameData.getCountries().stream()
+        allUpgrades.add(new Upgrade("Mask Mandate", 30, "Decrease spread rate by 3", null));
+        allUpgrades.add(new Upgrade("Social Distancing", 60, "Decrease spread rate by 4", gameData -> gameData.getCountries().stream()
+                .mapToInt(Country::getInfected)
+                .sum() >= 0.05 * gameData.getCountries().stream()
+                        .mapToInt(Country::getPopulation)
+                        .sum()
+        ));
+        allUpgrades.add(new Upgrade("Border Closure", 150, "Close all air routes", gameData -> gameData.getCountries().stream()
                 .mapToInt(Country::getInfected)
                 .sum() >= 0.1 * gameData.getCountries().stream()
                         .mapToInt(Country::getPopulation)
                         .sum()
         ));
-        allUpgrades.add(new Upgrade("Border Closure", 200, "Close all transport routes", gameData -> gameData.getCountries().stream()
-                .mapToInt(Country::getInfected)
-                .sum() >= 0.2 * gameData.getCountries().stream()
-                        .mapToInt(Country::getPopulation)
-                        .sum()
+        allUpgrades.add(new Upgrade("Partial Lockdown", 175, "Decrease spread rate by 5", gameData -> gameData.getCountries().stream()
+                .anyMatch(c -> c.getInfected() >= 0.2 * c.getPopulation())
         ));
-        allUpgrades.add(new Upgrade("Partial Lockdown", 250, "Decrease spread rate by 15", gameData -> gameData.getCountries().stream()
-                .anyMatch(c -> c.getInfected() >= 0.5 * c.getPopulation())
-        ));
-        allUpgrades.add(new Upgrade("Free Testing", 75, "Cure 20% of infected globally", gameData -> gameData.getCountries().stream()
+        allUpgrades.add(new Upgrade("Free Testing", 50, "Cure 40% of infected globally", gameData -> gameData.getCountries().stream()
                 .filter(c -> c.getInfected() > 0)
-                .count() >= 5
+                .count() >= 3
         ));
-        allUpgrades.add(new Upgrade("Airport Screening", 90, "Close all air transport routes", gameData -> gameData.getCountries().stream()
+        allUpgrades.add(new Upgrade("Airport Screening", 70, "Close all air transport routes and reduce spread rate by 1", gameData -> gameData.getCountries().stream()
                 .flatMap(c -> c.getTransportLinks().stream())
                 .filter(t -> t.getType().equalsIgnoreCase("Air"))
-                .anyMatch(t -> t.getSource().getInfected() > 0)
+                .count() > 0
         ));
-        allUpgrades.add(new Upgrade("Anti-Viral Drug", 200, "Cure is available in all countries", gameData -> gameData.getPoints() >= 100
-                && gameData.getCountries().stream()
-                        .mapToInt(Country::getInfected)
-                        .sum() >= 0.4 * gameData.getCountries().stream()
-                        .mapToInt(Country::getPopulation)
-                        .sum()
-        ));
-        allUpgrades.add(new Upgrade("Medical Aid", 150, "Cure 50% of infected globally", gameData -> gameData.getCountries().stream()
+        allUpgrades.add(new Upgrade("Anti-Viral Drug", 150, "Cure is available in all countries and increases cure rate", gameData -> gameData.getPoints() >= 75  
+        && gameData.getCountries().stream()
                 .mapToInt(Country::getInfected)
-                .sum() > 1000
+                .sum() >= 0.25 * gameData.getCountries().stream()  
+                .mapToInt(Country::getPopulation)
+                .sum()
         ));
-        allUpgrades.add(new Upgrade("Full Lockdown", 500, "Spread rate becomes 0", gameData -> {
+        allUpgrades.add(new Upgrade("Medical Aid", 125, "Enhanced cure availability(15s)", gameData -> gameData.getCountries().stream()
+                .mapToInt(Country::getInfected)
+                .sum() > 500
+        ));
+        allUpgrades.add(new Upgrade("Full Lockdown", 250, "Spread rate becomes 0, also closes routes", gameData -> {
             double infected = gameData.getCountries().stream()
                     .mapToInt(Country::getInfected)
                     .sum();
             double population = gameData.getCountries().stream()
                     .mapToInt(Country::getPopulation)
                     .sum();
-            return infected / population > 0.7;
+            return infected / population > 0.4;
         }
         ));
+        allUpgrades.add(new Upgrade("God Bless", 20, "Cure all infected and stop the spread", 
+        gameData -> {
+            // Only available if:
+            double infected = gameData.getCountries().stream()
+                    .mapToInt(Country::getInfected)
+                    .sum();
+            double population = gameData.getCountries().stream()
+                    .mapToInt(Country::getPopulation)
+                    .sum();
+            
+            return gameData.getPoints() >= 100 && // Requires points
+                   (infected / population) > 0.5 && // global infection
+                   gameData.getCountries().stream()
+                        .anyMatch(c -> c.getInfected() >= c.getPopulation()); // At least one country fully infected
+    }));
     }
 
     public List<Country> getCountries() {
@@ -124,11 +139,12 @@ public class GameData implements Serializable {
     public List<Upgrade> getAllUpgrades() {
         return allUpgrades;
     }
+
     public List<Upgrade> getAvailableUpgrades() {
-    return allUpgrades.stream()
-            .filter(upgrade -> upgrade.isAvailable(this)) // Filters based on predicate
-            .collect(Collectors.toList());
-}
+        return allUpgrades.stream()
+                .filter(upgrade -> upgrade.isAvailable(this)) // filters based on predicate
+                .collect(Collectors.toList());
+    }
 
     public boolean purchaseUpgrade(Upgrade upgrade) {
         if (points >= upgrade.getCost()) {

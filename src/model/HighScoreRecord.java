@@ -7,7 +7,7 @@ public class HighScoreRecord implements Serializable{
     private int finalScore;
     private String difficulty;
     private long timePlayedMillis;
-    private char resultType; //S or I
+    private char resultType; //S or I: Saved, Infected
 
     public HighScoreRecord(String playerName, int finalScore, String difficulty, long timePlayedMillis, char resultType) {
         this.playerName = playerName;

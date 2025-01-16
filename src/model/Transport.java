@@ -15,7 +15,7 @@ public class Transport implements Serializable {
         this.source = source;
         this.destination = destination;
         this.isRouteOpen = true;
-        this.closureThreshold = getDefaultThreshold(type);
+        this.closureThreshold = getDefaultThreshold(type); // I haven't implemented it full as I have some upgrades that do this partialy
     }
 
     private double getDefaultThreshold(String type) {
@@ -50,7 +50,7 @@ public class Transport implements Serializable {
     public void setRoadOpen(boolean isRouteOpen) {
         this.isRouteOpen = isRouteOpen;
     }
-
+// I haven't implemented it full as I have some upgrades that do this partialy
     public void checkAndCloseRouteIfNeeded() {
         double sourceRatio = (double) source.getInfected()/source.getPopulation();
         double destRatio = (double) destination.getInfected()/destination.getPopulation();

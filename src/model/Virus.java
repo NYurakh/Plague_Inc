@@ -66,7 +66,7 @@ public class Virus implements Serializable {
         for (Transport t : source.getTransportLinks()) {
             if (t.isRouteOpen()) {
                 Country dest = t.getDestination();
-                // Calculate spread based on transport type and source infection ratio
+                // spread basrd on transport type and source infection ratio
                 double sourceInfectionRatio = (double) source.getInfected() / source.getPopulation();
                 double spreadMultiplier = getTransportSpreadMultiplier(t.getType());
                 int infectionSpread = (int) (source.getInfected() * spreadMultiplier * sourceInfectionRatio);

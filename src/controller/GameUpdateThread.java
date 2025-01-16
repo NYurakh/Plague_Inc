@@ -16,7 +16,7 @@ class GameUpdateThread extends Thread {
                 if (controller.getGameData().isGameRunning()) {
                     controller.updateGame();
                 }
-                Thread.sleep(1000); // Update every second
+                Thread.sleep(1000); // update every second
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;

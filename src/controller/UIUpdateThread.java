@@ -21,7 +21,7 @@ class UIUpdateThread extends Thread{
                     // Repaint the map for animations
                     controller.getGameView().getMapPanel().repaint();
                 }
-                Thread.sleep(50); // 20 FPS refresh rate
+                Thread.sleep(50); // refresh rate
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;

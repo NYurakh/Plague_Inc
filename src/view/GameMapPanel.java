@@ -41,10 +41,6 @@ public class GameMapPanel extends JPanel {
         transportProgress = new HashMap<>();
 
         try {
-            // Get the path relative to where we are
-            // Go up one level from src
-
-            // Build the paths using the project root
             planeIcon = new ImageIcon(projectRoot + "/resources/images/planeIcon.png").getImage();
             boatIcon = new ImageIcon(projectRoot + "/resources/images/boatIcon.png").getImage();
             busIcon = new ImageIcon(projectRoot + "/resources/images/busIcon.png").getImage();
@@ -56,6 +52,7 @@ public class GameMapPanel extends JPanel {
         initNormalizedPositions();
     }
 
+    // some normalized values so country corresponds to the location on the background map
     private void initNormalizedPositions() {
         // For each country, store normalized (x, y) = (pixelX / 2036, pixelY / 1492)
         for (Country c : gameData.getCountries()) {
@@ -101,7 +98,7 @@ public class GameMapPanel extends JPanel {
     ) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
-        // Draw the background image, scaled to fit the panel:
+        // background image to fit the window
         if (backgroundImage != null) {
             float transparency = 0.5f;
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, transparency));
@@ -114,7 +111,7 @@ public class GameMapPanel extends JPanel {
             return;
         }
 
-        // --- Draw transport lines/vehicles ---
+        // draw transport/lines
         for (Country c : gameData.getCountries()) {
             Point2D.Double srcNorm = normalizedPositions.get(c);
             if (srcNorm == null) {
@@ -163,7 +160,7 @@ public class GameMapPanel extends JPanel {
             }
         }
 
-        // --- Draw country circles & labels ---
+        // draw coutry circles and lables
         for (Country c : gameData.getCountries()) {
             Point2D.Double norm = normalizedPositions.get(c);
             if (norm == null) {
@@ -181,7 +178,7 @@ public class GameMapPanel extends JPanel {
             g2.setColor(new Color(redValue, greenValue, 0));
             g2.fillOval(x - radius / 2, y - radius / 2, radius, radius);
 
-            // cure symbol if needed
+            // cure symbol 
             if (c.isCureSymbolVisible()) {
                 g2.setColor(Color.BLUE);
                 g2.drawString("⚕", x - radius / 2, y + radius / 2);

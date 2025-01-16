@@ -14,32 +14,24 @@ public class GameController {
     private GameData gameData;
     private String difficulty;
 
-    // Timers/threads
+    // threads
     private  GameUpdateThread gameUpdateThread;  // For virus spread
-    private UIUpdateThread uiUpdateThread; // For UI (time, animations, etc.)
+    private UIUpdateThread uiUpdateThread; // For UI 
 
-    private long lastUpdateMillis;
 
     public GameController(GameView gameView, GameData gameData, String difficulty) {
         this.gameView = gameView;
         this.gameData = gameData;
         this.difficulty = difficulty;
 
-        // Key binding for Ctrl+Shift+Q
+        // Ctrl+Shift+Q to exit
         bindExitShortcut();
 
         setupUpgradeButtonListener();
         startThreads();
     }
 
-    private void startThreads() {
-        gameUpdateThread = new GameUpdateThread(this);
-        uiUpdateThread = new UIUpdateThread(this);
-        
-        gameUpdateThread.start();
-        uiUpdateThread.start();
-    }
-
+    // Getters/Setters
     public GameData getGameData() {
         return gameData;
     }
@@ -48,7 +40,14 @@ public class GameController {
         return gameView;
     }
 
-    
+    // Methods
+    private void startThreads() {
+        gameUpdateThread = new GameUpdateThread(this);
+        uiUpdateThread = new UIUpdateThread(this);
+        
+        gameUpdateThread.start();
+        uiUpdateThread.start();
+    }
 
     public void updateGame() {
         // Spread virus
@@ -60,16 +59,15 @@ public class GameController {
         for (Country c : gameData.getCountries()) {
             virus.spreadToNeighbors(c);
         }
-        // Award points for each non-infected person
         // Award points based on saved population percentage
         int totalPopulation = gameData.getCountries().stream().mapToInt(Country::getPopulation).sum();
         int nonInfected = gameData.getCountries().stream().mapToInt(c -> c.getPopulation() - c.getInfected()).sum();
         int savedPercentage = (nonInfected * 100) / totalPopulation;
 
-        // Reward fewer points as savedPercentage increases
+        // fewer points as savedPercentage increases
         gameData.addPoints(Math.max(1, savedPercentage / 10));
 
-        // Check end conditions
+        //end conditions check
         checkEndConditions();
     }
 
@@ -104,8 +102,8 @@ public class GameController {
             }
             // Return to main menu
             gameView.dispose();
-            //show main menu again here or let user relaunch
 
+            //show main menu again
             MainMenuView mainMenu = new MainMenuView();
             new MainMenuController(mainMenu);
             mainMenu.setVisible(true);
@@ -131,12 +129,12 @@ public class GameController {
     }
 
     private void setupUpgradeButtonListener() {
-        // Add action listener to the upgrade button in GameView
+        
         gameView.getUpgradeButton().addActionListener(e -> {
-            // Create a new UpgradesView dialog
+            // new UpgradesView dialg
             UpgradesView upgradesView = new UpgradesView(gameView, gameData.getAvailableUpgrades());
 
-            // Add action listener for the buy button inside the upgrades dialog
+            // action listener for the buy button inside the upgrades dialog
             upgradesView.getBuyButton().addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -144,12 +142,14 @@ public class GameController {
                     if (selectedIndex >= 0) {
                         Upgrade selectedUpgrade = gameData.getAvailableUpgrades().get(selectedIndex);
                         if (gameData.getPoints() >= selectedUpgrade.getCost()) {
-                            gameData.addPoints(-selectedUpgrade.getCost()); // Deduct points
-                            selectedUpgrade.applyEffect(gameData); // Apply effect
-                            // upgradesView.updatePointsDisplay(gameData.getPoints());
+                            gameData.addPoints(-selectedUpgrade.getCost()); // minuse points for purchase
+                            selectedUpgrade.applyEffect(gameData); 
+                            
                             upgradesView.showSuccessMessage("Upgrade purchased: " + selectedUpgrade.getName());
 
                             // Remove non-reusable upgrades
+                            // I Have all upgredes reusable, just didn't implement the unreusable ones
+                            // So this do nothing:)
                             if (!selectedUpgrade.isReusable()) {
                                 upgradesView.removeUpgrade(selectedIndex);
                                 gameData.getAvailableUpgrades().remove(selectedIndex);
@@ -163,7 +163,7 @@ public class GameController {
                 }
             });
 
-            // Show the dialog
+            // show the dialog
             upgradesView.setVisible(true);
         });
     }

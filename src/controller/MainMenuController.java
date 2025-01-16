@@ -11,12 +11,12 @@ import view.MainMenuView;
 
 public class MainMenuController {
     private MainMenuView mainMenuView;
-    private GameData gameData;  // We'll reuse one GameData for high scores, etc.
+    private GameData gameData;  
 
     public MainMenuController(MainMenuView mainMenuView) {
         this.mainMenuView = mainMenuView;
         this.gameData = new GameData();
-        // Load previous high scores if any
+        // load previous high scores if any
         GameData.loadHighScores("highscores.dat", this.gameData);
 
         setupListeners();
@@ -33,10 +33,10 @@ public class MainMenuController {
         dialog.setVisible(true);
         String selectedDifficulty = dialog.getSelectedDifficulty();
         if (selectedDifficulty == null) {
-            return; // user closed or canceled
+            return; 
         }
 
-        // Setup the game data accordingly
+        // Some changes between the difficulties like initial spread rate and initial infection rate
         Virus virus;
         switch (selectedDifficulty) {
             case "Easy":
@@ -75,10 +75,7 @@ public class MainMenuController {
         hsv.setVisible(true);
     }
 
-    /**
-     * Create at least 10 countries and some transport links between them.
-     * With 3 transport types (Air, Bus, Boat).
-     */
+    // Some countries creation
     private void createWorld() {
         Country c1 = new Country("USA", 1000);
         Country c2 = new Country("Canada", 800);
@@ -103,7 +100,7 @@ public class MainMenuController {
         gameData.addCountry(c9);
         gameData.addCountry(c10);
 
-        // Add some transport routes
+        // some transport routes
         c1.addTransportLink(new Transport("Air", c1, c2));
         c2.addTransportLink(new Transport("Air", c2, c1));
         c2.addTransportLink(new Transport("Bus", c2, c1));
@@ -126,8 +123,5 @@ public class MainMenuController {
         c10.addTransportLink(new Transport("Air", c10, c9));
         c10.addTransportLink(new Transport("Air", c10, c3));
         c10.addTransportLink(new Transport("Air", c10, c2));
-
-
-        // And so on, add more if you like
     }
 }

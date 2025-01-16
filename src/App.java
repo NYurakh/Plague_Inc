@@ -7,6 +7,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
 
+        // to look like system style
         try {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (Exception e) {
