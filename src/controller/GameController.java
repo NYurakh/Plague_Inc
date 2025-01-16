@@ -1,13 +1,12 @@
 package controller;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.*;
 import model.*;
 import view.GameView;
 import view.MainMenuView;
 import view.UpgradesView;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class GameController {
 
@@ -16,8 +15,8 @@ public class GameController {
     private String difficulty;
 
     // Timers/threads
-    private Timer gameLoopTimer;  // For virus spread
-    private Timer uiRefreshTimer; // For UI (time, animations, etc.)
+    private  GameUpdateThread gameUpdateThread;  // For virus spread
+    private UIUpdateThread uiUpdateThread; // For UI (time, animations, etc.)
 
     private long lastUpdateMillis;
 
@@ -30,46 +29,28 @@ public class GameController {
         bindExitShortcut();
 
         setupUpgradeButtonListener();
-        startGameLoop();
-        startUIRefreshLoop();
+        startThreads();
     }
 
-    private void startGameLoop() {
-        lastUpdateMillis = System.currentTimeMillis();
-        gameLoopTimer = new Timer(1000, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!gameData.isGameRunning()) {
-                    gameLoopTimer.stop();
-                    return;
-                }
-                updateGame();
-            }
-        });
-        gameLoopTimer.start();
+    private void startThreads() {
+        gameUpdateThread = new GameUpdateThread(this);
+        uiUpdateThread = new UIUpdateThread(this);
+        
+        gameUpdateThread.start();
+        uiUpdateThread.start();
     }
 
-    private void startUIRefreshLoop() {
-        uiRefreshTimer = new Timer(50, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!gameData.isGameRunning()) {
-                    uiRefreshTimer.stop();
-                    return;
-                }
-                // Update time label
-                long elapsed = (System.currentTimeMillis() - gameData.getStartTimeMillis()) / 1000;
-                gameView.updateTimerLabel(elapsed);
-                gameView.updateScoreLabel(gameData.getPoints());
-
-                // repaint the map for animations
-                gameView.getMapPanel().repaint();
-            }
-        });
-        uiRefreshTimer.start();
+    public GameData getGameData() {
+        return gameData;
+    }
+    
+    public GameView getGameView() {
+        return gameView;
     }
 
-    private void updateGame() {
+    
+
+    public void updateGame() {
         // Spread virus
         Virus virus = gameData.getVirus();
         for (Country c : gameData.getCountries()) {
