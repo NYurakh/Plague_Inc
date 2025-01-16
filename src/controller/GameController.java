@@ -146,7 +146,7 @@ public class GameController {
                         if (gameData.getPoints() >= selectedUpgrade.getCost()) {
                             gameData.addPoints(-selectedUpgrade.getCost()); // Deduct points
                             selectedUpgrade.applyEffect(gameData); // Apply effect
-                            upgradesView.updatePointsDisplay(gameData.getPoints());
+                            // upgradesView.updatePointsDisplay(gameData.getPoints());
                             upgradesView.showSuccessMessage("Upgrade purchased: " + selectedUpgrade.getName());
 
                             // Remove non-reusable upgrades

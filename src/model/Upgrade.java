@@ -16,6 +16,7 @@ public class Upgrade implements Serializable {
         this.effectDescription = effectDescription;
         this.availabilityCondition = condition;
     }
+
     public boolean isAvailable(GameData gameData) {
         return availabilityCondition == null || availabilityCondition.test(gameData);
     }
@@ -39,13 +40,11 @@ public class Upgrade implements Serializable {
     public void applyEffect(GameData gameData) {
         Virus v = gameData.getVirus();
         switch (name) {
-            case "Mask Mandate":
+            case "Mask Mandate" ->
                 v.setSpreadRate(Math.max(0, v.getSpreadRate() - 5));
-                break;
-            case "Social Distancing":
+            case "Social Distancing" ->
                 v.setSpreadRate(Math.max(0, v.getSpreadRate() - 10));
-                break;
-            case "Border Closure":
+            case "Border Closure" -> {
                 for (Country c : gameData.getCountries()) {
                     for (Transport t : c.getTransportLinks()) {
                         if (t.getType().equalsIgnoreCase("air")) {
@@ -53,17 +52,16 @@ public class Upgrade implements Serializable {
                         }
                     }
                 }
-                break;
-            case "Partial Lockdown":
+            }
+            case "Partial Lockdown" ->
                 v.setSpreadRate(Math.max(0, v.getSpreadRate() - 15));
-                break;
 
-            case "Free Testing":
+            case "Free Testing" -> {
                 for (Country ctry : gameData.getCountries()) {
                     ctry.cure((int) (ctry.getInfected() * 0.3)); // cure 30%
                 }
-                break;
-            case "Airport Screening":
+            }
+            case "Airport Screening" -> {
                 for (Country c : gameData.getCountries()) {
                     for (Transport t : c.getTransportLinks()) {
                         if (t.getType().equalsIgnoreCase("air")) {
@@ -71,28 +69,55 @@ public class Upgrade implements Serializable {
                         }
                     }
                 }
-                break;
+            }
 
-            case "Anti-Viral Drug":
+            case "Anti-Viral Drug" -> {
                 for (Country ctry : gameData.getCountries()) {
                     ctry.setCureAvailable(true);
                 }
-                break;
+            }
 
-            case "Medical Aid":
+            case "Medical Aid" -> {
+                // Grab current rates so we can revert later
+                final int oldSpreadRate = v.getSpreadRate();
+                final int oldCureRate = v.getCureRate();
+
+                // Make cure rate > spread rate, e.g. spread + 10
+                v.setCureRate(oldSpreadRate + 10);
+
+                // Mark every country as temporarily curable:
                 for (Country ctry : gameData.getCountries()) {
-                    ctry.cure((int) (ctry.getInfected() * 0.6));
+                    ctry.setCureAvailable(true);
+                    ctry.setCureSymbolVisible(true);
                 }
+
+                // Launch a background thread to revert after 10 seconds
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(10_000); // 10s
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+
+                    // Turn off the cure:
+                    for (Country ctry : gameData.getCountries()) {
+                        ctry.setCureAvailable(false);
+                        ctry.setCureSymbolVisible(false);
+                    }
+                    v.setCureRate(oldCureRate); // revert to original cure rate
+                }).start();
+
                 break;
-            case "Full Lockdown":
+            }
+            case "Full Lockdown" -> {
                 v.setSpreadRate(0);
                 for (Country c : gameData.getCountries()) {
                     for (Transport t : c.getTransportLinks()) {
                         t.setRoadOpen(false);
                     }
                 }
-                break;
-            default:
+            }
+            default ->
                 throw new IllegalArgumentException("Unknown upgrade effect");
         }
     }

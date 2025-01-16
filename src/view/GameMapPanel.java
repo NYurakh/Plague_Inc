@@ -1,5 +1,6 @@
 package view;
 
+import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -59,85 +60,59 @@ public class GameMapPanel extends JPanel {
         // For each country, store normalized (x, y) = (pixelX / 2036, pixelY / 1492)
         for (Country c : gameData.getCountries()) {
             switch (c.getName()) {
-                case "USA":
+                case "USA" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(470.0 / 2036.0, 747.0 / 1492.0));
-                    break;
-                case "Canada":
+                case "Canada" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(246.0 / 2036.0, 521.0 / 1492.0));
-                    break;
-                case "Mexico":
+                case "Mexico" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(371.0 / 2036.0, 795.0 / 1492.0));
-                    break;
-                case "Brazil":
+                case "Brazil" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(673.0 / 2036.0, 982.0 / 1492.0));
-                    break;
-                case "UK":
+                case "UK" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(1040.0 / 2036.0, 490.0 / 1492.0));
-                    break;
-                case "France":
+                case "France" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(1030.0 / 2036.0, 640.0 / 1492.0));
-                    break;
-                case "Germany":
+                case "Germany" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(1130.0 / 2036.0, 610.0 / 1492.0));
-                    break;
-                case "Moskovia":
+                case "Moskovia" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(1680.0 / 2036.0, 590.0 / 1492.0));
-                    break;
-                case "China":
+                case "China" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(1840.0 / 2036.0, 680.0 / 1492.0));
-                    break;
-                case "Australia":
+                case "Australia" ->
                     normalizedPositions.put(c,
                             new Point2D.Double(1870.0 / 2036.0, 1080.0 / 1492.0));
-                    break;
-                default:
-                    // You can place any additional countries or default to (0,0)
+                default ->
                     normalizedPositions.put(c, new Point2D.Double(0.5, 0.5));
             }
         }
     }
 
-    // public void assignCountryPossitions() {
-    //     int size = gameData.getCountries().size();
-    //     int radius = 200;
-    //     int centerX = getWidth() / 2;
-    //     int centerY = getHeight() / 2;
-    //     for (int i = 0; i < size; i++) {
-    //         double angle = 2 * Math.PI * i / size;
-    //         int x = (int) (centerX + radius * Math.cos(angle));
-    //         int y = (int) (centerY + radius * Math.sin(angle));
-    //         countryPositions.put(gameData.getCountries().get(i), new Point(x, y));
-    //     }
-    //     for (Country c : gameData.getCountries()) {
-    //         for (Transport t : c.getTransportLinks()) {
-    //             transportProgress.put(t, Math.random());
-    //         }
-    //     }
-    // }
     @Override
     protected void paintComponent(Graphics g
     ) {
         super.paintComponent(g);
-
+        Graphics2D g2 = (Graphics2D) g;
         // Draw the background image, scaled to fit the panel:
         if (backgroundImage != null) {
-            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            float transparency = 0.5f;
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, transparency));
+        g2.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
         }
 
         if (gameData.getCountries().isEmpty()) {
             return;
         }
-
-        Graphics2D g2 = (Graphics2D) g;
 
         // --- Draw transport lines/vehicles ---
         for (Country c : gameData.getCountries()) {

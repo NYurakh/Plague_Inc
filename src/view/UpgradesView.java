@@ -21,7 +21,7 @@ public class UpgradesView extends JDialog {
         setSize(400, 300);
         setLocationRelativeTo(parent);
 
-        pointsLabel = new JLabel("Points: 0");
+        // pointsLabel = new JLabel("Points: 0");
         listModel = new DefaultListModel<>();
         for (Upgrade up : upgrades) {
             listModel.addElement(up.getName() + " (Cost: " + up.getCost() 
@@ -35,7 +35,7 @@ public class UpgradesView extends JDialog {
         buyButton = new JButton("Buy Selected Upgrade");
 
         setLayout(new BorderLayout());
-        add(pointsLabel, BorderLayout.NORTH);
+        // add(pointsLabel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(buyButton, BorderLayout.SOUTH);
     }
@@ -44,9 +44,9 @@ public class UpgradesView extends JDialog {
         return buyButton;
     }
 
-    public void updatePointsDisplay(int points) {
-        pointsLabel.setText("Points: " + points);
-    }
+    // public void updatePointsDisplay(int points) {
+    //     pointsLabel.setText("Points: " + points);
+    // }
 
     public void showSuccessMessage(String message) {
         JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
