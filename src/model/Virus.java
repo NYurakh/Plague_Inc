@@ -38,7 +38,7 @@ public class Virus implements Serializable {
 
         if (spreadRate == 0) {
             if (country.isCureAvailable()) {
-                int cured = (int) Math.ceil(country.getInfected() * (cureRate / 100.0));
+                int cured = (int) Math.ceil(country.getInfected() * (cureRate / 50.0));
                 country.cure(cured);
                 country.setCureSymbolVisible(true);
             }
