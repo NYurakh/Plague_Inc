@@ -33,26 +33,6 @@ public class GameView extends JFrame {
         setLayout(new BorderLayout());
         add(topPanel, BorderLayout.NORTH);
         add(mapPanel, BorderLayout.CENTER);
-
-        // Add action listener to trigger UpgradesView as a dialog
-        upgradeButton.addActionListener(e -> {
-            if (upgradesView == null) {
-                upgradesView = new UpgradesView(this, gameData.getAvailableUpgrades());
-                upgradesView.setVisible(true);
-    
-                upgradesView.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        upgradesView = null;
-                    }
-    
-                    @Override
-                    public void windowClosed(java.awt.event.WindowEvent e) {
-                        upgradesView = null;
-                    }
-                });
-            }
-        });
     }
 
     public void updateTimerLabel(long seconds) {
